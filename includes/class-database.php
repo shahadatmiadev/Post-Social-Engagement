@@ -14,18 +14,20 @@ class PSE_Database {
         $table_likes = $wpdb->prefix . 'pse_likes';
         $table_comments = $wpdb->prefix . 'pse_comments';
         
-        // Drop existing table if needed (temporarily for debugging)
-        // $wpdb->query( "DROP TABLE IF EXISTS {$table_likes}" );
-        
+        // Updated table structure with session_id and browser_fingerprint
         $sql = "CREATE TABLE IF NOT EXISTS {$table_likes} (
             id bigint(20) NOT NULL AUTO_INCREMENT,
             post_id bigint(20) NOT NULL,
             user_ip varchar(45) NOT NULL,
             user_id bigint(20) DEFAULT NULL,
+            session_id varchar(255) DEFAULT NULL,
+            browser_fingerprint varchar(255) DEFAULT NULL,
             created_at datetime DEFAULT CURRENT_TIMESTAMP,
             PRIMARY KEY (id),
             KEY post_id (post_id),
-            KEY user_ip (user_ip)
+            KEY user_ip (user_ip),
+            KEY session_id (session_id),
+            KEY browser_fingerprint (browser_fingerprint)
         ) {$charset_collate};
         
         CREATE TABLE IF NOT EXISTS {$table_comments} (
@@ -36,6 +38,7 @@ class PSE_Database {
             comment_text text NOT NULL,
             user_ip varchar(45) NOT NULL,
             user_id bigint(20) DEFAULT NULL,
+            browser_fingerprint varchar(255) DEFAULT NULL,
             status varchar(20) DEFAULT 'pending',
             created_at datetime DEFAULT CURRENT_TIMESTAMP,
             PRIMARY KEY (id),
@@ -51,23 +54,62 @@ class PSE_Database {
         // Debug: Log result
         error_log( 'PSE Table Creation Result: ' . print_r( $result, true ) );
         
-        // Verify table was created
-        $table_exists = $wpdb->get_var( "SHOW TABLES LIKE '{$table_likes}'" );
-        if ( $table_exists != $table_likes ) {
-            // Try direct query if dbDelta fails
-            $wpdb->query( "
-                CREATE TABLE IF NOT EXISTS {$table_likes} (
-                    id bigint(20) NOT NULL AUTO_INCREMENT,
-                    post_id bigint(20) NOT NULL,
-                    user_ip varchar(45) NOT NULL,
-                    user_id bigint(20) DEFAULT NULL,
-                    created_at datetime DEFAULT CURRENT_TIMESTAMP,
-                    PRIMARY KEY (id),
-                    KEY post_id (post_id),
-                    KEY user_ip (user_ip)
-                ) {$charset_collate}
-            " );
+        // For existing installations, add missing columns
+        $this->maybe_add_missing_columns();
+    }
+    
+    /**
+     * Add missing columns for existing installations
+     */
+    private function maybe_add_missing_columns() {
+        global $wpdb;
+        
+        $table_likes = $wpdb->prefix . 'pse_likes';
+        
+        // Check if session_id column exists
+        $row = $wpdb->get_results( "SHOW COLUMNS FROM {$table_likes} LIKE 'session_id'" );
+        if ( empty( $row ) ) {
+            $wpdb->query( "ALTER TABLE {$table_likes} ADD COLUMN session_id varchar(255) DEFAULT NULL" );
+            $wpdb->query( "ALTER TABLE {$table_likes} ADD INDEX (session_id)" );
         }
+        
+        // Check if browser_fingerprint column exists in likes table
+        $row = $wpdb->get_results( "SHOW COLUMNS FROM {$table_likes} LIKE 'browser_fingerprint'" );
+        if ( empty( $row ) ) {
+            $wpdb->query( "ALTER TABLE {$table_likes} ADD COLUMN browser_fingerprint varchar(255) DEFAULT NULL" );
+            $wpdb->query( "ALTER TABLE {$table_likes} ADD INDEX (browser_fingerprint)" );
+        }
+        
+        // Check if browser_fingerprint column exists in comments table
+        $table_comments = $wpdb->prefix . 'pse_comments';
+        $row = $wpdb->get_results( "SHOW COLUMNS FROM {$table_comments} LIKE 'browser_fingerprint'" );
+        if ( empty( $row ) ) {
+            $wpdb->query( "ALTER TABLE {$table_comments} ADD COLUMN browser_fingerprint varchar(255) DEFAULT NULL" );
+        }
+    }
+
+    /**
+     * Generate unique browser fingerprint
+     */
+    private function get_browser_fingerprint() {
+        $fingerprint_data = array(
+            'user_agent' => isset( $_SERVER['HTTP_USER_AGENT'] ) ? $_SERVER['HTTP_USER_AGENT'] : '',
+            'accept_language' => isset( $_SERVER['HTTP_ACCEPT_LANGUAGE'] ) ? $_SERVER['HTTP_ACCEPT_LANGUAGE'] : '',
+            'accept_encoding' => isset( $_SERVER['HTTP_ACCEPT_ENCODING'] ) ? $_SERVER['HTTP_ACCEPT_ENCODING'] : '',
+        );
+        
+        return md5( json_encode( $fingerprint_data ) );
+    }
+
+    /**
+     * Get or create session ID safely
+     */
+    private function get_session_id() {
+        // Check if session is already started
+        if ( session_status() === PHP_SESSION_NONE ) {
+            session_start();
+        }
+        return session_id();
     }
     
     public function get_likes_count( $post_id ) {
@@ -89,30 +131,27 @@ class PSE_Database {
     }
     
     public function has_user_liked( $post_id ) {
-        $user_ip = $this->get_user_ip();
         $user_id = get_current_user_id();
+        $session_id = $this->get_session_id();
+        $browser_fingerprint = $this->get_browser_fingerprint();
         
         global $wpdb;
         $table = $wpdb->prefix . 'pse_likes';
         
-        // Check if table exists
-        if ( $wpdb->get_var( "SHOW TABLES LIKE '{$table}'" ) != $table ) {
-            $this->create_tables();
-            return false;
-        }
-        
+        // If user is logged in
         if ( $user_id ) {
             $count = $wpdb->get_var( $wpdb->prepare(
-                "SELECT COUNT(*) FROM {$table} WHERE post_id = %d AND (user_ip = %s OR user_id = %d)",
+                "SELECT COUNT(*) FROM {$table} WHERE post_id = %d AND user_id = %d",
                 $post_id,
-                $user_ip,
                 $user_id
             ) );
         } else {
+            // For non-logged in users: use session_id OR browser_fingerprint
             $count = $wpdb->get_var( $wpdb->prepare(
-                "SELECT COUNT(*) FROM {$table} WHERE post_id = %d AND user_ip = %s",
+                "SELECT COUNT(*) FROM {$table} WHERE post_id = %d AND (session_id = %s OR browser_fingerprint = %s)",
                 $post_id,
-                $user_ip
+                $session_id,
+                $browser_fingerprint
             ) );
         }
         
@@ -125,17 +164,16 @@ class PSE_Database {
         $table = $wpdb->prefix . 'pse_likes';
         $user_ip = $this->get_user_ip();
         $user_id = get_current_user_id();
-        
-        // Check if table exists
-        if ( $wpdb->get_var( "SHOW TABLES LIKE '{$table}'" ) != $table ) {
-            $this->create_tables();
-        }
+        $session_id = $this->get_session_id();
+        $browser_fingerprint = $this->get_browser_fingerprint();
         
         $data = array(
-            'post_id'    => $post_id,
-            'user_ip'    => $user_ip,
-            'user_id'    => $user_id ? $user_id : null,
-            'created_at' => current_time( 'mysql' ),
+            'post_id'             => $post_id,
+            'user_ip'             => $user_ip,
+            'user_id'             => $user_id ? $user_id : null,
+            'session_id'          => $session_id,
+            'browser_fingerprint' => $browser_fingerprint,
+            'created_at'          => current_time( 'mysql' ),
         );
         
         $result = $wpdb->insert( $table, $data );
@@ -152,26 +190,23 @@ class PSE_Database {
         global $wpdb;
         
         $table = $wpdb->prefix . 'pse_likes';
-        $user_ip = $this->get_user_ip();
         $user_id = get_current_user_id();
-        
-        // Check if table exists
-        if ( $wpdb->get_var( "SHOW TABLES LIKE '{$table}'" ) != $table ) {
-            $this->create_tables();
-            return false;
-        }
+        $session_id = $this->get_session_id();
+        $browser_fingerprint = $this->get_browser_fingerprint();
         
         if ( $user_id ) {
-            $result = $wpdb->query( $wpdb->prepare(
-                "DELETE FROM {$table} WHERE post_id = %d AND (user_id = %d OR user_ip = %s)",
-                $post_id,
-                $user_id,
-                $user_ip
-            ) );
-        } else {
+            // Remove by user_id
             $result = $wpdb->delete( $table, array(
                 'post_id' => $post_id,
-                'user_ip' => $user_ip,
+                'user_id' => $user_id,
+            ) );
+        } else {
+            // Remove by session_id OR browser_fingerprint
+            $result = $wpdb->query( $wpdb->prepare(
+                "DELETE FROM {$table} WHERE post_id = %d AND (session_id = %s OR browser_fingerprint = %s)",
+                $post_id,
+                $session_id,
+                $browser_fingerprint
             ) );
         }
         
@@ -181,6 +216,20 @@ class PSE_Database {
         }
         
         return $result;
+    }
+
+    private function get_user_ip() {
+        $ip = '127.0.0.1';
+        
+        if ( ! empty( $_SERVER['HTTP_CLIENT_IP'] ) ) {
+            $ip = sanitize_text_field( wp_unslash( $_SERVER['HTTP_CLIENT_IP'] ) );
+        } elseif ( ! empty( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) {
+            $ip = sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_FORWARDED_FOR'] ) );
+        } elseif ( ! empty( $_SERVER['REMOTE_ADDR'] ) ) {
+            $ip = sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) );
+        }
+        
+        return $ip;
     }
     
     public function get_comments_count( $post_id ) {
@@ -199,16 +248,18 @@ class PSE_Database {
         global $wpdb;
         
         $table = $wpdb->prefix . 'pse_comments';
+        $browser_fingerprint = $this->get_browser_fingerprint();
         
         $defaults = array(
-            'post_id'      => 0,
-            'user_name'    => '',
-            'user_email'   => '',
-            'comment_text' => '',
-            'user_ip'      => $this->get_user_ip(),
-            'user_id'      => get_current_user_id() ? get_current_user_id() : null,
-            'status'       => 'pending',
-            'created_at'   => current_time( 'mysql' ),
+            'post_id'             => 0,
+            'user_name'           => '',
+            'user_email'          => '',
+            'comment_text'        => '',
+            'user_ip'             => $this->get_user_ip(),
+            'user_id'             => get_current_user_id() ? get_current_user_id() : null,
+            'browser_fingerprint' => $browser_fingerprint,
+            'status'              => 'pending',
+            'created_at'          => current_time( 'mysql' ),
         );
         
         $data = wp_parse_args( $data, $defaults );
@@ -236,20 +287,6 @@ class PSE_Database {
             $post_id,
             $limit
         ) );
-    }
-    
-    private function get_user_ip() {
-        $ip = '127.0.0.1';
-        
-        if ( ! empty( $_SERVER['HTTP_CLIENT_IP'] ) ) {
-            $ip = sanitize_text_field( wp_unslash( $_SERVER['HTTP_CLIENT_IP'] ) );
-        } elseif ( ! empty( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) {
-            $ip = sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_FORWARDED_FOR'] ) );
-        } elseif ( ! empty( $_SERVER['REMOTE_ADDR'] ) ) {
-            $ip = sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) );
-        }
-        
-        return $ip;
     }
     
     public function get_total_likes() {
