@@ -6,7 +6,7 @@
  * Version: 1.0.0
  * Author: Shahadat Mia
  * Requires at least: 5.7
- * Requires PHP:      7.0
+ * Requires PHP:      7.4
  * Text Domain: post-social-engagement
  * Domain Path: /languages
  * License: GPL v2 or later
