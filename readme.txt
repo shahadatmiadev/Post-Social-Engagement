@@ -1,9 +1,9 @@
 === Post Social Engagement ===
 Contributors: yourusername
-Tags: social engagement, likes, comments, shares, facebook like, social media, engagement, user interaction
+Tags: social engagement, likes, comments, shares, interaction
 Requires at least: 5.0
 Tested up to: 6.7
-Stable tag: 1.0.2
+Stable tag: 1.0.0
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -16,16 +16,16 @@ Post Social Engagement is a powerful WordPress plugin that adds interactive Like
 
 = Key Features =
 
-* **👍 Like System** - Users can like/unlike posts with one click
-* **💬 Comment System** - Allow users to comment on posts (guest comments supported)
-* **📤 Share System** - Share posts to Facebook, Twitter, LinkedIn, and WhatsApp
-* **⚡ AJAX Powered** - No page reload required for any action
-* **👤 Guest Comments** - Non-logged-in users can comment with name and email
-* **✅ Comment Moderation** - Admin approval system for comments
-* **📊 Analytics Dashboard** - View engagement statistics and top posts
-* **🎨 Modern Design** - Clean, responsive, and customizable interface
-* **🔒 Security** - Nonce verification and data sanitization
-* **📱 Mobile Responsive** - Works perfectly on all devices
+* ** Like System** - Users can like/unlike posts with one click
+* ** Comment System** - Allow users to comment on posts (guest comments supported)
+* ** Share System** - Share posts to Facebook, Twitter, LinkedIn, and WhatsApp
+* ** AJAX Powered** - No page reload required for any action
+* ** Guest Comments** - Non-logged-in users can comment with name and email
+* ** Comment Moderation** - Admin approval system for comments
+* ** Analytics Dashboard** - View engagement statistics and top posts
+* ** Modern Design** - Clean, responsive, and customizable interface
+* ** Security** - Nonce verification and data sanitization
+* ** Mobile Responsive** - Works perfectly on all devices
 
 = How It Works =
 
@@ -123,18 +123,6 @@ The plugin is translation-ready. You can translate it using Poedit or Loco Trans
 
 == Changelog ==
 
-= 1.0.2 =
-* Fixed database table creation on activation
-* Improved AJAX response handling
-* Added proper error messages
-* Fixed button position display issue
-
-= 1.0.1 =
-* Fixed duplicate buttons issue
-* Improved mobile responsiveness
-* Added comment approval system
-* Enhanced security with nonce verification
-
 = 1.0.0 =
 * Initial release
 * Like/Unlike functionality
@@ -146,12 +134,6 @@ The plugin is translation-ready. You can translate it using Poedit or Loco Trans
 * Translation ready
 
 == Upgrade Notice ==
-
-= 1.0.2 =
-Important update fixing database table creation and AJAX issues. Recommended for all users.
-
-= 1.0.1 =
-Security and stability update. Includes comment approval system.
 
 = 1.0.0 =
 Initial release of Post Social Engagement plugin.
@@ -170,16 +152,11 @@ Contributions are welcome! Please submit pull requests or issues on GitHub.
 
 Developed with ❤️ for the WordPress community.
 
-= Translations =
-
-* English (default)
-* Bengali (coming soon)
-
 == Plugin Links ==
 
 * [Plugin Homepage](https://wordpress.org/plugins/post-social-engagement/)
 * [Support Forum](https://wordpress.org/support/plugin/post-social-engagement/)
-* [GitHub Repository](https://github.com/yourusername/post-social-engagement)
+* [GitHub Repository](https://github.com/shahadatmiadev/Post-Social-Engagement)
 
 == Privacy Policy ==
 

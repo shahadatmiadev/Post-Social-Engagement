@@ -1,0 +1,307 @@
+# Copyright (C) 2024 Your Name
+# This file is distributed under the GPLv2 or later.
+msgid ""
+msgstr ""
+"Project-Id-Version: Post Social Engagement 1.0.2\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/post-social-engagement\n"
+"Last-Translator: Your Name <your@email.com>\n"
+"Language-Team: Your Name <your@email.com>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2024-01-01 12:00:00+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.0\n"
+"X-Domain: post-social-engagement\n"
+
+#: post-social-engagement.php:30
+msgid "Post Social Engagement"
+msgstr ""
+
+#: post-social-engagement.php:31
+msgid "Adds Facebook-style Like, Comment, and Share buttons to WordPress posts"
+msgstr ""
+
+#: includes/class-ajax-handler.php:45
+msgid "Invalid post ID"
+msgstr ""
+
+#: includes/class-ajax-handler.php:75
+msgid "Invalid data"
+msgstr ""
+
+#: includes/class-ajax-handler.php:88
+msgid "Anonymous"
+msgstr ""
+
+#: includes/class-ajax-handler.php:110
+msgid "Comment awaiting approval"
+msgstr ""
+
+#: includes/class-ajax-handler.php:111
+msgid "Comment added successfully"
+msgstr ""
+
+#: includes/class-ajax-handler.php:115
+msgid "Failed to add comment"
+msgstr ""
+
+#: includes/class-ajax-handler.php:147
+msgid "No comments yet. Be the first to comment!"
+msgstr ""
+
+#: includes/class-frontend.php:98
+msgid "Liked"
+msgstr ""
+
+#: includes/class-frontend.php:98
+msgid "Like"
+msgstr ""
+
+#: includes/class-frontend.php:107
+msgid "Comment"
+msgstr ""
+
+#: includes/class-frontend.php:115
+msgid "Share"
+msgstr ""
+
+#: includes/class-frontend.php:126
+msgid "Write a comment..."
+msgstr ""
+
+#: includes/class-frontend.php:128
+msgid "Post Comment"
+msgstr ""
+
+#: includes/class-frontend.php:135
+msgid "Share this post"
+msgstr ""
+
+#: includes/class-frontend.php:138
+msgid "Facebook"
+msgstr ""
+
+#: includes/class-frontend.php:139
+msgid "Twitter"
+msgstr ""
+
+#: includes/class-frontend.php:140
+msgid "LinkedIn"
+msgstr ""
+
+#: includes/class-frontend.php:141
+msgid "WhatsApp"
+msgstr ""
+
+#: includes/class-frontend.php:143
+msgid "Close"
+msgstr ""
+
+#: includes/class-settings.php:45
+msgid "Post Social Engagement"
+msgstr ""
+
+#: includes/class-settings.php:46
+msgid "Social Engagement"
+msgstr ""
+
+#: includes/class-settings.php:56
+msgid "Dashboard"
+msgstr ""
+
+#: includes/class-settings.php:64
+msgid "Comments"
+msgstr ""
+
+#: includes/class-settings.php:72
+msgid "Settings"
+msgstr ""
+
+#: includes/class-settings.php:118
+msgid "Post Social Engagement Dashboard"
+msgstr ""
+
+#: includes/class-settings.php:127
+msgid "Total Likes"
+msgstr ""
+
+#: includes/class-settings.php:133
+msgid "Total Comments"
+msgstr ""
+
+#: includes/class-settings.php:139
+msgid "Pending Comments"
+msgstr ""
+
+#: includes/class-settings.php:147
+msgid "Total Engagement"
+msgstr ""
+
+#: includes/class-settings.php:156
+msgid "Top Engaged Posts"
+msgstr ""
+
+#: includes/class-settings.php:157
+msgid "Posts with the highest user engagement (likes + comments)"
+msgstr ""
+
+#: includes/class-settings.php:167
+msgid "Post Title"
+msgstr ""
+
+#: includes/class-settings.php:168
+msgid "Likes"
+msgstr ""
+
+#: includes/class-settings.php:169
+msgid "Comments"
+msgstr ""
+
+#: includes/class-settings.php:170
+msgid "Total"
+msgstr ""
+
+#: includes/class-settings.php:171
+msgid "Action"
+msgstr ""
+
+#: includes/class-settings.php:223
+msgid "View"
+msgstr ""
+
+#: includes/class-settings.php:234
+msgid "No engagement data yet."
+msgstr ""
+
+#: includes/class-settings.php:235
+msgid "When users like or comment on your posts, they will appear here."
+msgstr ""
+
+#: includes/class-settings.php:246
+msgid "Quick Actions"
+msgstr ""
+
+#: includes/class-settings.php:251
+msgid "Manage Comments"
+msgstr ""
+
+#: includes/class-settings.php:254
+msgid "All Posts"
+msgstr ""
+
+#: includes/class-settings.php:327
+msgid "Post Social Engagement Settings"
+msgstr ""
+
+#: includes/class-settings.php:337
+msgid "Enable Features"
+msgstr ""
+
+#: includes/class-settings.php:340
+msgid "Enable Likes"
+msgstr ""
+
+#: includes/class-settings.php:344
+msgid "Enable Comments"
+msgstr ""
+
+#: includes/class-settings.php:348
+msgid "Enable Shares"
+msgstr ""
+
+#: includes/class-settings.php:356
+msgid "Button Position"
+msgstr ""
+
+#: includes/class-settings.php:360
+msgid "Top of content"
+msgstr ""
+
+#: includes/class-settings.php:363
+msgid "Bottom of content"
+msgstr ""
+
+#: includes/class-settings.php:366
+msgid "Both top and bottom"
+msgstr ""
+
+#: includes/class-settings.php:375
+msgid "Comment Settings"
+msgstr ""
+
+#: includes/class-settings.php:378
+msgid "Require admin approval for comments"
+msgstr ""
+
+#: includes/class-settings.php:381
+msgid "When enabled, comments will need admin approval before appearing on the site."
+msgstr ""
+
+#: includes/class-settings.php:387
+msgid "Save Settings"
+msgstr ""
+
+#: includes/class-settings.php:454
+msgid "Security check failed"
+msgstr ""
+
+#: includes/class-settings.php:472
+msgid "Bulk Actions"
+msgstr ""
+
+#: includes/class-settings.php:473
+msgid "Approve"
+msgstr ""
+
+#: includes/class-settings.php:474
+msgid "Delete"
+msgstr ""
+
+#: includes/class-settings.php:475
+msgid "Apply"
+msgstr ""
+
+#: includes/class-settings.php:489
+msgid "Comment"
+msgstr ""
+
+#: includes/class-settings.php:490
+msgid "Author"
+msgstr ""
+
+#: includes/class-settings.php:491
+msgid "Post"
+msgstr ""
+
+#: includes/class-settings.php:492
+msgid "Date"
+msgstr ""
+
+#: includes/class-settings.php:493
+msgid "Actions"
+msgstr ""
+
+#: includes/class-settings.php:502
+msgid "No comments found."
+msgstr ""
+
+#: includes/class-settings.php:540
+msgid "Are you sure?"
+msgstr ""
+
+#: includes/class-settings.php:555
+msgid "Pending"
+msgstr ""
+
+#: includes/class-settings.php:558
+msgid "Approved"
+msgstr ""
+
+#: includes/class-settings.php:626
+msgid "Comments approved successfully!"
+msgstr ""
+
+#: includes/class-settings.php:630
+msgid "Comments deleted successfully!"
+msgstr ""

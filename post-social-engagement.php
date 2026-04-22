@@ -1,12 +1,15 @@
 <?php
 /**
  * Plugin Name: Post Social Engagement
- * Plugin URI: https://yourwebsite.com/
+ * Plugin URI: https://github.com/shahadatmiadev/Post-Social-Engagement
  * Description: Adds Facebook-style Like, Comment, and Share buttons to WordPress posts
- * Version: 1.0.2
- * Author: Your Name
- * License: GPL v2 or later
+ * Version: 1.0.0
+ * Author: Shahadat Mia
+ * Requires at least: 5.7
+ * Requires PHP:      7.0
  * Text Domain: post-social-engagement
+ * Domain Path: /languages
+ * License: GPL v2 or later
  */
 
 // Prevent direct access.
@@ -15,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Define plugin constants.
-define( 'PSE_VERSION', '1.0.2' );
+define( 'PSE_VERSION', '1.0.0' );
 define( 'PSE_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'PSE_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 
