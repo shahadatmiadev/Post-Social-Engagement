@@ -2,7 +2,7 @@
 Contributors: shahadatmia
 Tags: social engagement, likes, comments, shares, interaction
 Requires at least: 5.7
-Tested up to: 6.7
+Tested up to: 6.9
 Stable tag: 1.0.0
 Requires PHP: 7.4
 License: GPLv2 or later
