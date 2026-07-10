@@ -1,9 +1,9 @@
 <?php
 /**
- * Plugin Name: Post Social Engagement
+ * Plugin Name: Xohanni Post Social Engagement
  * Plugin URI: https://github.com/shahadatmiadev/Post-Social-Engagement
  * Description: Adds Facebook-style Like, Comment, and Share buttons to WordPress posts
- * Version: 1.0.0
+ * Version: 1.1.0
  * Author: Shahadat Mia
  * Requires at least: 5.7
  * Requires PHP:      7.4
@@ -18,26 +18,26 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Define plugin constants.
-define( 'PSE_VERSION', '1.0.0' );
-define( 'PSE_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
-define( 'PSE_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
+define( 'XOPSE_VERSION', '1.1.0' );
+define( 'XOPSE_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
+define( 'XOPSE_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 
 // Include required files.
-require_once PSE_PLUGIN_DIR . 'includes/class-database.php';
-require_once PSE_PLUGIN_DIR . 'includes/class-ajax-handler.php';
-require_once PSE_PLUGIN_DIR . 'includes/class-settings.php';
-require_once PSE_PLUGIN_DIR . 'includes/class-frontend.php';
+require_once XOPSE_PLUGIN_DIR . 'includes/class-database.php';
+require_once XOPSE_PLUGIN_DIR . 'includes/class-ajax-handler.php';
+require_once XOPSE_PLUGIN_DIR . 'includes/class-settings.php';
+require_once XOPSE_PLUGIN_DIR . 'includes/class-frontend.php';
 
 // Global database object.
-global $pse_db;
-$pse_db = new PSE_Database();
+global $xopse_db;
+$xopse_db = new XOPSE_Database();
 
 // Activation hook - Force table creation
-register_activation_hook( __FILE__, 'pse_activate_plugin' );
-function pse_activate_plugin() {
-    global $pse_db;
-    $pse_db->create_tables();
-    
+register_activation_hook( __FILE__, 'xopse_activate_plugin' );
+function xopse_activate_plugin() {
+    global $xopse_db;
+    $xopse_db->create_tables();
+
     $default_settings = array(
         'show_on_home'     => true,
         'show_on_archive'  => true,
@@ -47,20 +47,20 @@ function pse_activate_plugin() {
         'comment_approval' => false,
         'button_position'  => 'bottom',
     );
-    
-    if ( ! get_option( 'pse_settings' ) ) {
-        add_option( 'pse_settings', $default_settings );
+
+    if ( ! get_option( 'xopse_settings' ) ) {
+        add_option( 'xopse_settings', $default_settings );
     }
 }
 
 // Also check on init if table exists
-add_action( 'init', 'pse_check_tables' );
-function pse_check_tables() {
+add_action( 'init', 'xopse_check_tables' );
+function xopse_check_tables() {
     global $wpdb;
-    $table_name = $wpdb->prefix . 'pse_likes';
-    
+    $table_name = $wpdb->prefix . 'xopse_likes';
+
     if ( $wpdb->get_var( "SHOW TABLES LIKE '{$table_name}'" ) != $table_name ) {
-        global $pse_db;
-        $pse_db->create_tables();
+        global $xopse_db;
+        $xopse_db->create_tables();
     }
 }

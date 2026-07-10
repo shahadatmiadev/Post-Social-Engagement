@@ -4,13 +4,13 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-class PSE_Settings {
-    
+class XOPSE_Settings {
+
     public function __construct() {
         add_action( 'admin_menu', array( $this, 'add_admin_menu' ) );
         add_action( 'admin_init', array( $this, 'register_settings' ) );
-        add_action( 'admin_post_pse_approve_comment', array( $this, 'handle_comment_approval' ) );
-        add_action( 'admin_post_pse_delete_comment', array( $this, 'handle_comment_delete' ) );
+        add_action( 'admin_post_xopse_approve_comment', array( $this, 'handle_comment_approval' ) );
+        add_action( 'admin_post_xopse_delete_comment', array( $this, 'handle_comment_delete' ) );
         add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_scripts' ) );
     }
 
@@ -18,30 +18,37 @@ class PSE_Settings {
      * Enqueue admin scripts and styles
      */
     public function enqueue_admin_scripts( $hook ) {
-        // Only load on our plugin pages
         $allowed_pages = array(
             'toplevel_page_post-social-engagement',
-            'social-engagement_page_pse-comments',
-            'social-engagement_page_pse-settings'
+            'social-engagement_page_xopse-comments',
+            'social-engagement_page_xopse-settings',
         );
-        
-        if ( in_array( $hook, $allowed_pages ) ) {
-            wp_enqueue_style( 
-                'pse-admin-style', 
-                PSE_PLUGIN_URL . 'assets/css/admin-style.css', 
-                array(), 
-                PSE_VERSION 
+
+        if ( in_array( $hook, $allowed_pages, true ) ) {
+            wp_enqueue_style(
+                'xopse-admin-style',
+                XOPSE_PLUGIN_URL . 'assets/css/admin-style.css',
+                array(),
+                XOPSE_VERSION
+            );
+        }
+
+        // Properly enqueue the comments-page select-all logic via wp_add_inline_script
+        if ( 'social-engagement_page_xopse-comments' === $hook ) {
+            wp_add_inline_script(
+                'jquery',
+                'jQuery(document).ready(function($){ $("#select-all").on("click", function(){ $("input[name=\'comment_ids[]\']").prop("checked", this.checked); }); });'
             );
         }
     }
-    
+
     public function register_settings() {
-        register_setting( 'pse_settings_group', 'pse_settings', array( $this, 'sanitize_settings' ) );
+        register_setting( 'xopse_settings_group', 'xopse_settings', array( $this, 'sanitize_settings' ) );
     }
-    
+
     public function add_admin_menu() {
         add_menu_page(
-            __( 'Post Social Engagement', 'post-social-engagement' ),
+            __( 'Xohanni Post Social Engagement', 'post-social-engagement' ),
             __( 'Social Engagement', 'post-social-engagement' ),
             'manage_options',
             'post-social-engagement',
@@ -49,7 +56,7 @@ class PSE_Settings {
             'dashicons-share',
             30
         );
-        
+
         add_submenu_page(
             'post-social-engagement',
             __( 'Dashboard', 'post-social-engagement' ),
@@ -58,80 +65,80 @@ class PSE_Settings {
             'post-social-engagement',
             array( $this, 'render_dashboard_page' )
         );
-        
+
         add_submenu_page(
             'post-social-engagement',
             __( 'Comments', 'post-social-engagement' ),
             __( 'Comments', 'post-social-engagement' ) . ' <span class="awaiting-mod">' . $this->get_pending_count() . '</span>',
             'manage_options',
-            'pse-comments',
+            'xopse-comments',
             array( $this, 'render_comments_page' )
         );
-        
+
         add_submenu_page(
             'post-social-engagement',
             __( 'Settings', 'post-social-engagement' ),
             __( 'Settings', 'post-social-engagement' ),
             'manage_options',
-            'pse-settings',
+            'xopse-settings',
             array( $this, 'render_settings_page' )
         );
     }
-    
+
     private function get_pending_count() {
         global $wpdb;
-        $table = esc_sql( $wpdb->prefix . 'pse_comments' );
+        $table = esc_sql( $wpdb->prefix . 'xopse_comments' );
         $count = $wpdb->get_var( "SELECT COUNT(*) FROM {$table} WHERE status = 'pending'" );
         return $count ? $count : 0;
     }
 
     private function get_likes_trend() {
         global $wpdb;
-        $table = $wpdb->prefix . 'pse_likes';
-        
-        $last_week = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$table} WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)" ) );
+        $table = $wpdb->prefix . 'xopse_likes';
+
+        $last_week     = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$table} WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)" ) );
         $previous_week = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$table} WHERE created_at BETWEEN DATE_SUB(NOW(), INTERVAL 14 DAY) AND DATE_SUB(NOW(), INTERVAL 7 DAY)" ) );
-        
-        if ( ! $previous_week || $previous_week == 0 ) {
+
+        if ( ! $previous_week || 0 == $previous_week ) {
             return 100;
         }
         return round( ( ( intval( $last_week ) - intval( $previous_week ) ) / intval( $previous_week ) ) * 100 );
     }
-    
+
     private function get_comments_trend() {
         global $wpdb;
-        $table = $wpdb->prefix . 'pse_comments';
-        
-        $last_week = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$table} WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY) AND status = %s", 'approved' ) );
+        $table = $wpdb->prefix . 'xopse_comments';
+
+        $last_week     = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$table} WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY) AND status = %s", 'approved' ) );
         $previous_week = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$table} WHERE created_at BETWEEN DATE_SUB(NOW(), INTERVAL 14 DAY) AND DATE_SUB(NOW(), INTERVAL 7 DAY) AND status = %s", 'approved' ) );
-        
-        if ( ! $previous_week || $previous_week == 0 ) {
+
+        if ( ! $previous_week || 0 == $previous_week ) {
             return 100;
         }
         return round( ( ( intval( $last_week ) - intval( $previous_week ) ) / intval( $previous_week ) ) * 100 );
     }
-    
+
     public function render_dashboard_page() {
         if ( ! current_user_can( 'manage_options' ) ) {
             return;
         }
-        
-        global $pse_db;
-        
-        if ( ! isset( $pse_db ) ) {
-            $pse_db = new PSE_Database();
+
+        global $xopse_db;
+
+        if ( ! isset( $xopse_db ) ) {
+            $xopse_db = new XOPSE_Database();
         }
-        
-        $total_likes = $pse_db->get_total_likes();
-        $total_comments = $pse_db->get_total_comments();
+
+        $total_likes      = $xopse_db->get_total_likes();
+        $total_comments   = $xopse_db->get_total_comments();
         $pending_comments = $this->get_pending_count();
-        $top_posts = $pse_db->get_top_engaged_posts();
-        $likes_trend = $this->get_likes_trend();
-        $comments_trend = $this->get_comments_trend();
+        $top_posts        = $xopse_db->get_top_engaged_posts();
+        $likes_trend      = $this->get_likes_trend();
+        $comments_trend   = $this->get_comments_trend();
         ?>
         <div class="wrap pse-dashboard-wrap">
             <h1 class="pse-dashboard-title">📊 <?php esc_html_e( 'Post Social Engagement Dashboard', 'post-social-engagement' ); ?></h1>
-            
+
             <!-- Stats Cards -->
             <div class="pse-stats-grid">
                 <div class="pse-stat-card pse-stat-card-likes">
@@ -144,7 +151,7 @@ class PSE_Settings {
                         <span class="trend-up">↑ +<?php echo esc_html( $likes_trend ); ?>%</span>
                     </div>
                 </div>
-                
+
                 <div class="pse-stat-card pse-stat-card-comments">
                     <div class="pse-stat-icon">💬</div>
                     <div class="pse-stat-info">
@@ -155,7 +162,7 @@ class PSE_Settings {
                         <span class="trend-up">↑ +<?php echo esc_html( $comments_trend ); ?>%</span>
                     </div>
                 </div>
-                
+
                 <div class="pse-stat-card pse-stat-card-pending">
                     <div class="pse-stat-icon">⏳</div>
                     <div class="pse-stat-info">
@@ -170,7 +177,7 @@ class PSE_Settings {
                         <?php endif; ?>
                     </div>
                 </div>
-                
+
                 <div class="pse-stat-card pse-stat-card-engagement">
                     <div class="pse-stat-icon">📈</div>
                     <div class="pse-stat-info">
@@ -182,14 +189,14 @@ class PSE_Settings {
                     </div>
                 </div>
             </div>
-            
+
             <!-- Top Engaged Posts -->
             <div class="pse-top-posts-section">
                 <div class="pse-section-header">
                     <h2>🏆 <?php esc_html_e( 'Top Engaged Posts', 'post-social-engagement' ); ?></h2>
                     <p class="pse-section-desc"><?php esc_html_e( 'Posts with the highest user engagement (likes + comments)', 'post-social-engagement' ); ?></p>
                 </div>
-                
+
                 <div class="pse-table-container">
                     <table class="pse-modern-table">
                         <thead>
@@ -206,13 +213,13 @@ class PSE_Settings {
                             <?php if ( ! empty( $top_posts ) && is_array( $top_posts ) ) : ?>
                                 <?php $rank = 1; ?>
                                 <?php foreach ( $top_posts as $post_data ) : ?>
-                                    <?php 
+                                    <?php
                                     if ( ! isset( $post_data->post_id ) ) {
                                         continue;
                                     }
                                     $total_engagement = isset( $post_data->likes ) && isset( $post_data->comments ) ? intval( $post_data->likes ) + intval( $post_data->comments ) : 0;
-                                    $post_title = get_the_title( $post_data->post_id );
-                                    $post_url = get_permalink( $post_data->post_id );
+                                    $post_title       = get_the_title( $post_data->post_id );
+                                    $post_url         = get_permalink( $post_data->post_id );
                                     ?>
                                     <tr class="pse-post-row rank-<?php echo esc_attr( $rank ); ?>">
                                         <td class="rank-column">
@@ -270,15 +277,15 @@ class PSE_Settings {
                     </table>
                 </div>
             </div>
-            
+
             <!-- Quick Actions -->
             <div class="pse-quick-actions">
                 <h3>⚡ <?php esc_html_e( 'Quick Actions', 'post-social-engagement' ); ?></h3>
                 <div class="action-buttons">
-                    <a href="<?php echo esc_url( admin_url( 'admin.php?page=pse-settings' ) ); ?>" class="quick-action-btn settings-btn">
+                    <a href="<?php echo esc_url( admin_url( 'admin.php?page=xopse-settings' ) ); ?>" class="quick-action-btn settings-btn">
                         ⚙️ <?php esc_html_e( 'Settings', 'post-social-engagement' ); ?>
                     </a>
-                    <a href="<?php echo esc_url( admin_url( 'admin.php?page=pse-comments&status=pending' ) ); ?>" class="quick-action-btn comments-btn">
+                    <a href="<?php echo esc_url( admin_url( 'admin.php?page=xopse-comments&status=pending' ) ); ?>" class="quick-action-btn comments-btn">
                         💬 <?php esc_html_e( 'Manage Comments', 'post-social-engagement' ); ?>
                     </a>
                     <a href="<?php echo esc_url( admin_url( 'edit.php' ) ); ?>" class="quick-action-btn posts-btn">
@@ -289,47 +296,45 @@ class PSE_Settings {
         </div>
         <?php
     }
-    
+
     public function render_comments_page() {
         global $wpdb;
-        $table = esc_sql( $wpdb->prefix . 'pse_comments' );
-        
-        // Handle bulk actions
+        $table = esc_sql( $wpdb->prefix . 'xopse_comments' );
+
         if ( isset( $_POST['bulk_action'] ) && isset( $_POST['comment_ids'] ) && ! empty( $_POST['bulk_action'] ) ) {
             $this->handle_bulk_actions();
         }
-        
+
         $status = isset( $_GET['status'] ) ? sanitize_text_field( wp_unslash( $_GET['status'] ) ) : 'pending';
-        $where = '';
-        
+        $where  = '';
+
         if ( 'pending' === $status ) {
             $where = "WHERE status = 'pending'";
         } elseif ( 'approved' === $status ) {
             $where = "WHERE status = 'approved'";
         }
-        
-        // Use prepare for safe SQL
-        $sql = "SELECT * FROM {$table} {$where} ORDER BY created_at DESC LIMIT 100";
+
+        $sql      = "SELECT * FROM {$table} {$where} ORDER BY created_at DESC LIMIT 100";
         $comments = $wpdb->get_results( $sql );
         ?>
         <div class="wrap">
             <h1><?php esc_html_e( 'Comments', 'post-social-engagement' ); ?></h1>
-            
+
             <ul class="subsubsub">
                 <li>
-                    <a href="?page=pse-comments&status=pending" class="<?php echo $status === 'pending' ? 'current' : ''; ?>">
-                        <?php esc_html_e( 'Pending', 'post-social-engagement' ); ?> 
+                    <a href="?page=xopse-comments&status=pending" class="<?php echo $status === 'pending' ? 'current' : ''; ?>">
+                        <?php esc_html_e( 'Pending', 'post-social-engagement' ); ?>
                         <span class="count">(<?php echo esc_html( $this->get_pending_count() ); ?>)</span>
                     </a>
                 </li>
                 <li>|</li>
                 <li>
-                    <a href="?page=pse-comments&status=approved" class="<?php echo $status === 'approved' ? 'current' : ''; ?>">
+                    <a href="?page=xopse-comments&status=approved" class="<?php echo $status === 'approved' ? 'current' : ''; ?>">
                         <?php esc_html_e( 'Approved', 'post-social-engagement' ); ?>
                     </a>
                 </li>
             </ul>
-            
+
             <form method="post">
                 <div class="tablenav top">
                     <div class="alignleft actions bulkactions">
@@ -341,7 +346,7 @@ class PSE_Settings {
                         <input type="submit" class="button action" value="<?php esc_attr_e( 'Apply', 'post-social-engagement' ); ?>">
                     </div>
                 </div>
-                
+
                 <table class="wp-list-table widefat fixed striped">
                     <thead>
                         <tr>
@@ -362,15 +367,15 @@ class PSE_Settings {
                             <?php foreach ( $comments as $comment ) : ?>
                                 <tr>
                                     <td><input type="checkbox" name="comment_ids[]" value="<?php echo esc_attr( $comment->id ); ?>"></td>
-                                    <td>>
+                                    <td>
                                         <strong><?php echo esc_html( $comment->comment_text ); ?></strong>
                                         <div class="row-actions">
                                             <?php if ( 'pending' === $comment->status ) : ?>
-                                                <a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=pse_approve_comment&id=' . $comment->id ), 'pse_approve_comment' ) ); ?>">
+                                                <a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=xopse_approve_comment&id=' . $comment->id ), 'xopse_approve_comment' ) ); ?>">
                                                     <?php esc_html_e( 'Approve', 'post-social-engagement' ); ?>
                                                 </a> |
                                             <?php endif; ?>
-                                            <a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=pse_delete_comment&id=' . $comment->id ), 'pse_delete_comment' ) ); ?>" 
+                                            <a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=xopse_delete_comment&id=' . $comment->id ), 'xopse_delete_comment' ) ); ?>"
                                                onclick="return confirm('<?php esc_attr_e( 'Are you sure?', 'post-social-engagement' ); ?>')">
                                                 <?php esc_html_e( 'Delete', 'post-social-engagement' ); ?>
                                             </a>
@@ -384,13 +389,13 @@ class PSE_Settings {
                                     <td><?php echo esc_html( $comment->user_name ); ?><br>
                                         <small><?php echo esc_html( $comment->user_email ); ?></small>
                                     </td>
-                                    <td>>
+                                    <td>
                                         <a href="<?php echo esc_url( get_permalink( $comment->post_id ) ); ?>" target="_blank">
                                             <?php echo esc_html( get_the_title( $comment->post_id ) ); ?>
                                         </a>
                                     </td>
                                     <td><?php echo esc_html( human_time_diff( strtotime( $comment->created_at ) ) . ' ago' ); ?></td>
-                                    <td>>
+                                    <td>
                                         <?php if ( 'pending' === $comment->status ) : ?>
                                             <span class="button button-small" style="background: #f0ad4e; color: #fff; border: none;">
                                                 <?php esc_html_e( 'Pending', 'post-social-engagement' ); ?>
@@ -408,37 +413,25 @@ class PSE_Settings {
                 </table>
             </form>
         </div>
-        
-        <script>
-        jQuery(document).ready(function($) {
-            $('#select-all').on('click', function() {
-                $('input[name="comment_ids[]"]').prop('checked', this.checked);
-            });
-        });
-        </script>
-        <style>
-            .subsubsub { margin: 0 0 10px 0; }
-            .row-actions { visibility: visible; margin-top: 5px; }
-        </style>
         <?php
     }
-    
+
     private function handle_bulk_actions() {
         if ( ! isset( $_POST['comment_ids'] ) || empty( $_POST['comment_ids'] ) ) {
             return;
         }
-        
-        $action = isset( $_POST['bulk_action'] ) ? sanitize_text_field( wp_unslash( $_POST['bulk_action'] ) ) : '';
+
+        $action      = isset( $_POST['bulk_action'] ) ? sanitize_text_field( wp_unslash( $_POST['bulk_action'] ) ) : '';
         $comment_ids = array_map( 'intval', $_POST['comment_ids'] );
-        
+
         if ( empty( $action ) || empty( $comment_ids ) ) {
             return;
         }
-        
+
         global $wpdb;
-        $table = esc_sql( $wpdb->prefix . 'pse_comments' );
-        $ids = implode( ',', array_map( 'intval', $comment_ids ) );
-        
+        $table = esc_sql( $wpdb->prefix . 'xopse_comments' );
+        $ids   = implode( ',', array_map( 'intval', $comment_ids ) );
+
         if ( 'approve' === $action ) {
             $wpdb->query( $wpdb->prepare( "UPDATE {$table} SET status = 'approved' WHERE id IN ({$ids})" ) );
             echo '<div class="notice notice-success"><p>' . esc_html__( 'Comments approved successfully!', 'post-social-engagement' ) . '</p></div>';
@@ -447,62 +440,62 @@ class PSE_Settings {
             echo '<div class="notice notice-success"><p>' . esc_html__( 'Comments deleted successfully!', 'post-social-engagement' ) . '</p></div>';
         }
     }
-    
+
     public function handle_comment_approval() {
-        if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'pse_approve_comment' ) ) {
+        if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'xopse_approve_comment' ) ) {
             wp_die( esc_html__( 'Security check failed', 'post-social-engagement' ) );
         }
-        
+
         $comment_id = isset( $_GET['id'] ) ? intval( $_GET['id'] ) : 0;
-        
+
         if ( ! $comment_id ) {
             wp_die( esc_html__( 'Invalid comment ID', 'post-social-engagement' ) );
         }
-        
+
         global $wpdb;
-        $table = esc_sql( $wpdb->prefix . 'pse_comments' );
-        
+        $table = esc_sql( $wpdb->prefix . 'xopse_comments' );
+
         $wpdb->update( $table, array( 'status' => 'approved' ), array( 'id' => $comment_id ) );
-        
-        wp_safe_redirect( admin_url( 'admin.php?page=pse-comments&status=pending' ) );
+
+        wp_safe_redirect( admin_url( 'admin.php?page=xopse-comments&status=pending' ) );
         exit;
     }
-    
+
     public function handle_comment_delete() {
-        if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'pse_delete_comment' ) ) {
+        if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'xopse_delete_comment' ) ) {
             wp_die( esc_html__( 'Security check failed', 'post-social-engagement' ) );
         }
-        
+
         $comment_id = isset( $_GET['id'] ) ? intval( $_GET['id'] ) : 0;
-        
+
         if ( ! $comment_id ) {
             wp_die( esc_html__( 'Invalid comment ID', 'post-social-engagement' ) );
         }
-        
+
         global $wpdb;
-        $table = esc_sql( $wpdb->prefix . 'pse_comments' );
-        
+        $table = esc_sql( $wpdb->prefix . 'xopse_comments' );
+
         $wpdb->delete( $table, array( 'id' => $comment_id ) );
-        
-        wp_safe_redirect( admin_url( 'admin.php?page=pse-comments' ) );
+
+        wp_safe_redirect( admin_url( 'admin.php?page=xopse-comments' ) );
         exit;
     }
-    
+
     public function render_settings_page() {
-        $settings = get_option( 'pse_settings', array() );
-        
-        if ( isset( $_POST['submit'] ) && check_admin_referer( 'pse_settings_action' ) ) {
+        $settings = get_option( 'xopse_settings', array() );
+
+        if ( isset( $_POST['submit'] ) && check_admin_referer( 'xopse_settings_action' ) ) {
             $settings = $this->sanitize_settings( $_POST );
-            update_option( 'pse_settings', $settings );
+            update_option( 'xopse_settings', $settings );
             echo '<div class="notice notice-success"><p>' . esc_html__( 'Settings saved!', 'post-social-engagement' ) . '</p></div>';
         }
         ?>
         <div class="wrap">
-            <h1><?php esc_html_e( 'Post Social Engagement Settings', 'post-social-engagement' ); ?></h1>
-            
+            <h1><?php esc_html_e( 'Xohanni Post Social Engagement Settings', 'post-social-engagement' ); ?></h1>
+
             <form method="post" action="">
-                <?php wp_nonce_field( 'pse_settings_action' ); ?>
-                
+                <?php wp_nonce_field( 'xopse_settings_action' ); ?>
+
                 <table class="form-table">
                     <tr>
                         <th scope="row"><?php esc_html_e( 'Enable Features', 'post-social-engagement' ); ?></th>
@@ -523,7 +516,7 @@ class PSE_Settings {
                             </label>
                         </td>
                     </tr>
-                    
+
                     <tr>
                         <th scope="row"><?php esc_html_e( 'Button Position', 'post-social-engagement' ); ?></th>
                         <td>
@@ -540,7 +533,7 @@ class PSE_Settings {
                             </select>
                         </td>
                     </tr>
-                    
+
                     <tr>
                         <th scope="row"><?php esc_html_e( 'Comment Settings', 'post-social-engagement' ); ?></th>
                         <td>
@@ -554,7 +547,7 @@ class PSE_Settings {
                         </td>
                     </tr>
                 </table>
-                
+
                 <p class="submit">
                     <input type="submit" name="submit" class="button-primary" value="<?php esc_attr_e( 'Save Settings', 'post-social-engagement' ); ?>">
                 </p>
@@ -562,26 +555,26 @@ class PSE_Settings {
         </div>
         <?php
     }
-    
+
     private function sanitize_settings( $input ) {
         $sanitized = array();
-        
+
         $sanitized['enable_likes']     = isset( $input['enable_likes'] );
         $sanitized['enable_comments']  = isset( $input['enable_comments'] );
         $sanitized['enable_shares']    = isset( $input['enable_shares'] );
         $sanitized['comment_approval'] = isset( $input['comment_approval'] );
         $sanitized['show_on_home']     = true;
         $sanitized['show_on_archive']  = true;
-        
+
         if ( isset( $input['button_position'] ) ) {
             $sanitized['button_position'] = sanitize_text_field( $input['button_position'] );
         } else {
             $sanitized['button_position'] = 'bottom';
         }
-        
+
         return $sanitized;
     }
 }
 
 // Initialize Settings
-new PSE_Settings();
+new XOPSE_Settings();

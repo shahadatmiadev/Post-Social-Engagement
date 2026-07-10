@@ -4,64 +4,56 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-class PSE_Frontend {
-    
+class XOPSE_Frontend {
+
     public function __construct() {
         add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
         add_filter( 'the_content', array( $this, 'add_engagement_buttons' ), 9999 );
     }
-    
+
     public function enqueue_scripts() {
         if ( is_singular( 'post' ) || is_home() || is_archive() || is_search() ) {
             wp_enqueue_script( 'jquery' );
-            
+
             wp_enqueue_script(
-                'pse-script',
-                PSE_PLUGIN_URL . 'assets/js/pse-script.js',
+                'xopse-script',
+                XOPSE_PLUGIN_URL . 'assets/js/pse-script.js',
                 array( 'jquery' ),
-                PSE_VERSION,
+                XOPSE_VERSION,
                 true
             );
-            
+
             wp_localize_script(
-                'pse-script',
-                'pse_ajax',
+                'xopse-script',
+                'xopse_ajax',
                 array(
-                    'ajax_url'  => admin_url( 'admin-ajax.php' ),
-                    'nonce'     => wp_create_nonce( 'pse_nonce' ),
+                    'ajax_url' => admin_url( 'admin-ajax.php' ),
+                    'nonce'    => wp_create_nonce( 'xopse_nonce' ),
                 )
             );
-            
+
             wp_enqueue_style(
-                'pse-style',
-                PSE_PLUGIN_URL . 'assets/css/pse-style.css',
+                'xopse-style',
+                XOPSE_PLUGIN_URL . 'assets/css/pse-style.css',
                 array(),
-                PSE_VERSION
+                XOPSE_VERSION
             );
         }
     }
-    
+
     public function add_engagement_buttons( $content ) {
         global $post;
-        
-        // Only on single post pages
+
         if ( ! is_singular( 'post' ) ) {
             return $content;
         }
-        
-        // Get settings
-        $settings = get_option( 'pse_settings', array() );
-        
-        // Debug: Log settings (remove after testing)
-        error_log( 'PSE Settings: ' . print_r( $settings, true ) );
-        
-        // Get button position - default 'bottom'
+
+        $settings = get_option( 'xopse_settings', array() );
+
         $button_position = isset( $settings['button_position'] ) ? $settings['button_position'] : 'bottom';
-        
-        // Generate buttons HTML
+
         $buttons_html = $this->generate_buttons_html( $post->ID );
-        
-        // Apply position
+
         if ( 'top' === $button_position ) {
             return $buttons_html . $content;
         } elseif ( 'bottom' === $button_position ) {
@@ -69,24 +61,23 @@ class PSE_Frontend {
         } elseif ( 'both' === $button_position ) {
             return $buttons_html . $content . $buttons_html;
         } else {
-            // Default to bottom
             return $content . $buttons_html;
         }
     }
-    
+
     private function generate_buttons_html( $post_id ) {
-        $settings = get_option( 'pse_settings', array() );
-        
-        global $pse_db;
-        
-        if ( ! isset( $pse_db ) ) {
-            $pse_db = new PSE_Database();
+        $settings = get_option( 'xopse_settings', array() );
+
+        global $xopse_db;
+
+        if ( ! isset( $xopse_db ) ) {
+            $xopse_db = new XOPSE_Database();
         }
-        
-        $likes      = $pse_db->get_likes_count( $post_id );
-        $comments   = $pse_db->get_comments_count( $post_id );
-        $user_liked = $pse_db->has_user_liked( $post_id );
-        
+
+        $likes      = $xopse_db->get_likes_count( $post_id );
+        $comments   = $xopse_db->get_comments_count( $post_id );
+        $user_liked = $xopse_db->has_user_liked( $post_id );
+
         ob_start();
         ?>
         <div class="pse-engagement-wrapper" data-post-id="<?php echo esc_attr( $post_id ); ?>">
@@ -98,7 +89,7 @@ class PSE_Frontend {
                         <span class="pse-count"><?php echo esc_html( $likes ); ?></span>
                     </button>
                 <?php endif; ?>
-                
+
                 <?php if ( ! empty( $settings['enable_comments'] ) ) : ?>
                     <button type="button" class="pse-button pse-comment-btn" data-post-id="<?php echo esc_attr( $post_id ); ?>">
                         <span class="pse-icon">💬</span>
@@ -106,7 +97,7 @@ class PSE_Frontend {
                         <span class="pse-count"><?php echo esc_html( $comments ); ?></span>
                     </button>
                 <?php endif; ?>
-                
+
                 <?php if ( ! empty( $settings['enable_shares'] ) ) : ?>
                     <button type="button" class="pse-button pse-share-btn" data-post-id="<?php echo esc_attr( $post_id ); ?>">
                         <span class="pse-icon">📤</span>
@@ -114,7 +105,7 @@ class PSE_Frontend {
                     </button>
                 <?php endif; ?>
             </div>
-            
+
             <?php if ( ! empty( $settings['enable_comments'] ) ) : ?>
                 <div class="pse-comments-area" data-post-id="<?php echo esc_attr( $post_id ); ?>" style="display: none;">
                     <div class="pse-comments-list"></div>
@@ -125,7 +116,7 @@ class PSE_Frontend {
                 </div>
             <?php endif; ?>
         </div>
-        
+
         <div class="pse-share-modal" style="display: none;">
             <div class="pse-share-modal-content">
                 <h3><?php esc_html_e( 'Share this post', 'post-social-engagement' ); ?></h3>
@@ -139,10 +130,10 @@ class PSE_Frontend {
             </div>
         </div>
         <?php
-        
+
         return ob_get_clean();
     }
 }
 
 // Initialize Frontend.
-new PSE_Frontend();
+new XOPSE_Frontend();

@@ -326,6 +326,9 @@
     color: #1e293b;
 }
 
+.subsubsub { margin: 0 0 10px 0; }
+.row-actions { visibility: visible; margin-top: 5px; }
+
 /* Responsive */
 @media (max-width: 768px) {
     .pse-stats-grid {

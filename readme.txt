@@ -1,9 +1,9 @@
-=== Post Social Engagement ===
-Contributors: shahadatmia
+=== Xohanni Post Social Engagement ===
+Contributors: xohanniloy017, shahadatmia
 Tags: social engagement, likes, comments, shares, interaction
 Requires at least: 5.7
 Tested up to: 6.9
-Stable tag: 1.0.0
+Stable tag: 1.1.0
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -12,7 +12,7 @@ Add Facebook-style Like, Comment, and Share buttons to your WordPress posts with
 
 == Description ==
 
-Post Social Engagement is a powerful WordPress plugin that adds interactive Like, Comment, and Share buttons to your posts, similar to Facebook's engagement system. It enhances user interaction and boosts engagement on your website.
+Xohanni Post Social Engagement is a powerful WordPress plugin that adds interactive Like, Comment, and Share buttons to your posts, similar to Facebook's engagement system. It enhances user interaction and boosts engagement on your website.
 
 = Key Features =
 
@@ -42,7 +42,7 @@ Post Social Engagement is a powerful WordPress plugin that adds interactive Like
 * **Magazines** - Build community through comments and shares
 * **Personal Websites** - Connect with your audience
 
-= Why Choose Post Social Engagement? =
+= Why Choose Xohanni Post Social Engagement? =
 
 * **Lightweight** - Minimal impact on page load speed
 * **No External Dependencies** - Works independently without third-party services
@@ -55,7 +55,7 @@ Post Social Engagement is a powerful WordPress plugin that adds interactive Like
 = Automatic Installation =
 
 1. Go to WordPress Admin → Plugins → Add New
-2. Search for "Post Social Engagement"
+2. Search for "Xohanni Post Social Engagement"
 3. Click Install Now → Activate
 
 = Manual Installation =
@@ -94,7 +94,7 @@ Yes, you can customize the CSS or use the included CSS classes to style buttons 
 
 = Is this GDPR compliant? =
 
-The plugin stores user IP addresses for like tracking and comment moderation. You should inform users about this in your privacy policy.
+The plugin stores user IP addresses for like tracking and comment moderation, and sets a first-party visitor cookie for anonymous like deduplication. You should inform users about this in your privacy policy.
 
 = Can I disable specific features? =
 
@@ -102,7 +102,7 @@ Yes, from Settings page you can enable/disable Likes, Comments, or Share feature
 
 = Does it work with caching plugins? =
 
-Yes, the plugin works with most caching plugins as all interactions use AJAX.
+Yes, the plugin is compatible with full-page caching setups (Nginx, Varnish, managed hosting) because it uses a first-party cookie instead of PHP sessions for visitor identification. All interactions use AJAX.
 
 = Can I show buttons on custom post types? =
 
@@ -123,6 +123,9 @@ The plugin is translation-ready. You can translate it using Poedit or Loco Trans
 
 == Changelog ==
 
+= 1.1.0 =
+* Addressed WordPress.org plugin review feedback: renamed plugin display name and internal prefix for uniqueness (xopse_), properly enqueued previously inline admin assets, sanitized all $_SERVER superglobal reads, replaced PHP session_start() with a first-party cookie for cache-compatible visitor tracking, and updated contributors list.
+
 = 1.0.0 =
 * Initial release
 * Like/Unlike functionality
@@ -135,8 +138,11 @@ The plugin is translation-ready. You can translate it using Poedit or Loco Trans
 
 == Upgrade Notice ==
 
+= 1.1.0 =
+Addresses WordPress.org plugin review requirements. Re-save your plugin settings after upgrading.
+
 = 1.0.0 =
-Initial release of Post Social Engagement plugin.
+Initial release of Xohanni Post Social Engagement plugin.
 
 == Additional Information ==
 
@@ -164,6 +170,7 @@ This plugin stores the following user data:
 - IP address (for like tracking and comment spam prevention)
 - User ID (for logged-in users)
 - Comment data (name, email, comment text)
+- A first-party visitor cookie (`xopse_visitor_id`) used to identify anonymous users for like deduplication — no PHP sessions are started
 
 This data is stored in your WordPress database and is not shared with any third parties. You should include this information in your website's privacy policy.
 
